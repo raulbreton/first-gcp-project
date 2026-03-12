@@ -1,0 +1,33 @@
+name: Test GCP Connection
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch: # Esto permite ejecutarlo manualmente con un botón
+
+jobs:
+  check-connection:
+    runs-on: ubuntu-latest
+    # Permisos necesarios para intercambiar tokens con Google
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v2'
+
+      - name: 'Verify Connection'
+        run: |
+          gcloud auth list
+          gcloud storage ls
